@@ -30,6 +30,7 @@ set(MODELKEYS_SOURCES
     Source/PluginProcessor.cpp
     Source/PluginEditor.cpp
     Source/Presets/PresetManager.cpp
+    Source/Presets/FactoryPresets.cpp
     Source/UI/CustomLookAndFeel.cpp
     Source/UI/VisualizerComponent.cpp
 )
@@ -78,6 +79,7 @@ add_executable(ModelKeys_Tests
     Source/PluginProcessor.cpp
     Source/PluginEditor.cpp
     Source/Presets/PresetManager.cpp
+    Source/Presets/FactoryPresets.cpp
     Source/UI/CustomLookAndFeel.cpp
     Source/UI/VisualizerComponent.cpp
 )

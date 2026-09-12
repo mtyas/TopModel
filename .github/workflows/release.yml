@@ -59,15 +59,20 @@ jobs:
         run: |
           cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 
+      - name: Install macOS Dependencies
+        if: runner.os == 'macOS'
+        run: |
+          which ninja || brew install ninja
+
       - name: Configure CMake (macOS)
         if: runner.os == 'macOS'
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
 
       - name: Configure CMake (Linux)
         if: runner.os == 'Linux'
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 
       - name: Build All Targets
         run: |

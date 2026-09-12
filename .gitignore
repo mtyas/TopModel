@@ -1,0 +1,41 @@
+# Build directories
+build/
+bin/
+out/
+cmake-build-*/
+
+# Audio and benchmark renders
+*.wav
+*.aif
+*.aiff
+*.mp3
+renders/
+scratch/
+
+# Visual Studio & IDE files
+.vs/
+*.user
+*.suo
+*.sln.docstates
+*.VC.db
+*.VC.opendb
+.idea/
+.vscode/
+
+# Compiled plugin binaries
+*.vst3/
+*.clap
+*.component/
+*.dll
+*.dylib
+*.so
+*.exe
+*.lib
+*.a
+*.exp
+*.pdb
+*.ilk
+
+# OS generated files
+.DS_Store
+Thumbs.db

@@ -41,16 +41,20 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Set up MSVC environment (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Install Linux Dependencies
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y             xvfb             libasound2-dev             libjack-jackd2-dev             lv2-dev             libgl1-mesa-dev             libx11-dev             libxinerama-dev             libxext-dev             libxcursor-dev             libfreetype6-dev             libxrandr-dev
+          sudo apt-get install -y             pkg-config             xvfb             libasound2-dev             libjack-jackd2-dev             lv2-dev             libgl1-mesa-dev             libx11-dev             libxinerama-dev             libxext-dev             libxcursor-dev             libfreetype6-dev             libxrandr-dev
 
       - name: Configure CMake (Windows)
         if: runner.os == 'Windows'
         run: |
-          cmake -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 
       - name: Configure CMake (macOS)
         if: runner.os == 'macOS'
@@ -68,27 +72,42 @@ jobs:
 
       - name: Run Tests (Windows)
         if: runner.os == 'Windows'
+        shell: pwsh
         run: |
-          ./build/Release/ModelKeys_Tests.exe
+          if (Test-Path ./build/Release/ModelKeys_Tests.exe) {
+            ./build/Release/ModelKeys_Tests.exe
+          } elseif (Test-Path ./build/ModelKeys_Tests.exe) {
+            ./build/ModelKeys_Tests.exe
+          } else {
+            Get-ChildItem -Path build -Recurse -Filter "ModelKeys_Tests.exe" | Select-Object -First 1 | ForEach-Object { & $_.FullName }
+          }
 
       - name: Run Tests (macOS)
         if: runner.os == 'macOS'
         run: |
-          ./build/ModelKeys_Tests
+          if [ -f ./build/Release/ModelKeys_Tests ]; then
+            ./build/Release/ModelKeys_Tests
+          else
+            ./build/ModelKeys_Tests
+          fi
 
       - name: Run Tests (Linux)
         if: runner.os == 'Linux'
         run: |
-          xvfb-run -a ./build/ModelKeys_Tests
+          if [ -f ./build/Release/ModelKeys_Tests ]; then
+            xvfb-run -a ./build/Release/ModelKeys_Tests
+          else
+            xvfb-run -a ./build/ModelKeys_Tests
+          fi
 
       - name: Package Binaries (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path staging/TopModel -Force
-          Copy-Item -Path build/ModelKeys_artefacts/Release/VST3/TopModel.vst3 -Destination staging/TopModel/ -Recurse
-          Copy-Item -Path build/ModelKeys_artefacts/Release/CLAP/TopModel.clap -Destination staging/TopModel/
-          Copy-Item -Path build/ModelKeys_artefacts/Release/Standalone/TopModel.exe -Destination staging/TopModel/
+          Get-ChildItem -Path build/ModelKeys_artefacts -Recurse -Filter "TopModel.vst3" | Select-Object -First 1 | ForEach-Object { Copy-Item -Path $_.FullName -Destination staging/TopModel/ -Recurse }
+          Get-ChildItem -Path build/ModelKeys_artefacts -Recurse -Filter "TopModel.clap" | Select-Object -First 1 | ForEach-Object { Copy-Item -Path $_.FullName -Destination staging/TopModel/ }
+          Get-ChildItem -Path build/ModelKeys_artefacts -Recurse -Filter "TopModel.exe" | Select-Object -First 1 | ForEach-Object { Copy-Item -Path $_.FullName -Destination staging/TopModel/ }
           Copy-Item -Path README.md, LICENSE -Destination staging/TopModel/
           New-Item -ItemType Directory -Path staging/TopModel/docs -Force
           Copy-Item -Path docs/MANUAL.md -Destination staging/TopModel/docs/

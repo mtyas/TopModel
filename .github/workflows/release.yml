@@ -49,7 +49,10 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y             pkg-config             xvfb             libasound2-dev             libjack-jackd2-dev             lv2-dev             libgl1-mesa-dev             libx11-dev             libxinerama-dev             libxext-dev             libxcursor-dev             libfreetype6-dev             libxrandr-dev
+          sudo apt-get install -y             pkg-config             ninja-build             xvfb             libasound2-dev             libjack-jackd2-dev             lv2-dev             libgl1-mesa-dev             libx11-dev             libxinerama-dev             libxext-dev             libxcursor-dev             libfreetype6-dev             libfontconfig1-dev             libxrandr-dev             libcurl4-openssl-dev
+          sudo ln -sf /usr/include/freetype2/ft2build.h /usr/include/ft2build.h
+          sudo ln -sf /usr/include/freetype2/freetype /usr/include/freetype
+          echo "CPATH=/usr/include/freetype2:$CPATH" >> $GITHUB_ENV
 
       - name: Configure CMake (Windows)
         if: runner.os == 'Windows'

@@ -24,7 +24,7 @@
 
 TopModel is an expressive physical modeling synthesizer. Unlike wavetable, subtractive, or sampled synthesizers, TopModel calculates the mechanical and acoustical physics of physical systems at every audio sample:
 
-$$\text{Excitation Force } F_c(t) \longrightarrow \text{Modal Resonator Bank } \sum_{m=1}^{M} x_m(t) \longrightarrow \text{Acoustic Body \& Transducer} \longrightarrow \text{Multi-FX}$$
+$$\text{Excitation Force } F_c(t) \longrightarrow \text{Modal Resonator Bank } \sum_{m=1}^{M} x_m(t) \longrightarrow \text{Acoustic Body and Transducer} \longrightarrow \text{Multi-FX}$$
 
 Because every vibration is simulated dynamically:
 - **Velocity transforms timbre, not just amplitude**: Striking harder causes nonlinear felt stiffening, brighter spectral overtones, and amplitude-dependent pitch blooms.

@@ -24,11 +24,11 @@
 
 TopModel is an expressive physical modeling synthesizer. Unlike wavetable, subtractive, or sampled synthesizers, TopModel calculates the mechanical and acoustical physics of physical systems at every audio sample:
 
-\text{Excitation Force } F_c(t) \longrightarrow \text{Modal Resonator Bank } \sum_{m=1}^{M} x_m(t) \longrightarrow \text{Acoustic Body & Transducer} \longrightarrow \text{Multi-FX}
+$$\text{Excitation Force } F_c(t) \longrightarrow \text{Modal Resonator Bank } \sum_{m=1}^{M} x_m(t) \longrightarrow \text{Acoustic Body \& Transducer} \longrightarrow \text{Multi-FX}$$
 
 Because every vibration is simulated dynamically:
 - **Velocity transforms timbre, not just amplitude**: Striking harder causes nonlinear felt stiffening, brighter spectral overtones, and amplitude-dependent pitch blooms.
-- **Precedent vibration alters strike impact**: Consecutive strikes on a vibrating string take into account the string's momentum and compressed hammer felt ({rel} = v_{hammer} - v_{string}$).
+- **Precedent vibration alters strike impact**: Consecutive strikes on a vibrating string take into account the string's momentum and compressed hammer felt ($v_{rel} = v_{hammer} - v_{string}$).
 - **Sympathetic Resonance**: Active notes couple into one another through the soundboard bridge, allowing open strings to sing harmonically.
 
 ---
@@ -76,10 +76,10 @@ The TopModel interface is arranged into clear logical layers:
 ![Visualizer](images/visualizer.png)
 
 The top visualizer is a physical oscilloscope driven by the instantaneous vibrational state of the active voices:
-- **Standing Wave Motion**: Displays the superposition of active modal partials. Uses continuous phasor envelope tracking ( = \sqrt{x_m^2 + y_m^2}$) so that vibrations remain smoothly animated throughout note attack, sustain, and decay.
+- **Standing Wave Motion**: Displays the superposition of active modal partials. Uses continuous phasor envelope tracking ($r_m = \sqrt{x_m^2 + y_m^2}$) so that vibrations remain smoothly animated throughout note attack, sustain, and decay.
 - **Boundary Conditions**:
   - *Clamped Tine / Reed*: Clamped on the left, maximum excursion at the free vibrating tip on the right.
-  - *Free Bar*: Fixed acoustic nodes at  \approx 0.224$ and  \approx 0.776$ (vibraphone suspension points).
+  - *Free Bar*: Fixed acoustic nodes at $x_1 \approx 0.224 L$ and $x_2 \approx 0.776 L$ (vibraphone suspension points).
   - *Membrane / Steelpan*: Circular boundary clamping with parabolic antinode deflection.
   - *String*: Fixed bridge mounts at both ends with sinusoidal spatial harmonics.
 - **Exciter Indicator (Amber)**:
@@ -97,12 +97,12 @@ The top visualizer is a physical oscilloscope driven by the instantaneous vibrat
 
 ![Exciter Panel](images/panel_exciter.png)
 
-The Exciter models the physical contact force (t)$ delivered into the resonator.
+The Exciter models the physical contact force $F_c(t)$ delivered into the resonator.
 
 ### Exciter Types
 
 1. **Strike (Hammer / Mallet)**:
-   - Simulates felt, rubber, or wooden hammer impacts using the Hunt-Crossley model ( = k \cdot \delta^p + c \cdot \delta^p \cdot v_{rel}$).
+   - Simulates felt, rubber, or wooden hammer impacts using the Hunt-Crossley model ($F_c = k \cdot \delta^p + c \cdot \delta^p \cdot v_{rel}$).
    - Fast repeated strikes ($< 250\text{ ms}$) compact the hammer felt, dynamically boosting strike hardness and transient click.
 2. **Pluck (Plectrum)**:
    - Deflects string until reaching maximum static displacement, then releases with nonlinear plectrum friction.
@@ -114,7 +114,7 @@ The Exciter models the physical contact force (t)$ delivered into the resonator.
 ### Parameters
 
 - **Hardness**: Controls the elasticity of the contact head (0.0 = soft felt, 1.0 = hard wood/metal).
-- **Position**: Normalized physical contact point along the resonator length (.02$ to .98$).
+- **Position**: Normalized physical contact point along the resonator length ($0.02$ to $0.98$).
 - **Stiffness**: Spring constant of the contact material during collision.
 - **Mallet Click / Strike Click**: High-frequency acoustic transient level generated on initial impact.
 - **Rosin Grit (Bow Mode)**: Microscopic friction roughness of the bow hair.
@@ -128,26 +128,26 @@ The Exciter models the physical contact force (t)$ delivered into the resonator.
 
 The Resonator Bank consists of up to 32 coupled second-order modal oscillators:
 
-\ddot{x}_m + 2\gamma_m \dot{x}_m + \omega_m^2 x_m = \frac{1}{m_{eff}} (F_c \cdot \sin(m \pi \xi) + F_{symp})
+$$\ddot{x}_m + 2\gamma_m \dot{x}_m + \omega_m^2 x_m = \frac{1}{m_{eff}} (F_c \cdot \sin(m \pi \xi) + F_{symp})$$
 
 ### Resonator Geometries
 
-1. **String**: Harmonic overtone series  = m \cdot f_0 \sqrt{1 + B m^2}$.
-2. **Clamped Tine**: Cantilever bar (Rhodes) with inharmonic ratios  = f_0 \cdot [1, 6.27, 17.55, 34.39, \dots]$ and bell chime.
-3. **Free Bar**: Supported bar (Marimba, Xylophone) with undercut tuning arch ratios  = f_0 \cdot [1, 3.98, 9.25, \dots]$.
-4. **Circular Membrane**: Drum head with Bessel function zeros  = f_0 \cdot [1, 1.59, 2.14, 2.30, 2.65, \dots]$.
+1. **String**: Harmonic overtone series $f_m = m \cdot f_0 \sqrt{1 + B m^2}$.
+2. **Clamped Tine**: Cantilever bar (Rhodes) with inharmonic ratios $f_m = f_0 \cdot [1, 6.27, 17.55, 34.39, \dots]$ and bell chime.
+3. **Free Bar**: Supported bar (Marimba, Xylophone) with undercut tuning arch ratios $f_m = f_0 \cdot [1, 3.98, 9.25, \dots]$.
+4. **Circular Membrane**: Drum head with Bessel function zeros $f_m = f_0 \cdot [1, 1.59, 2.14, 2.30, 2.65, \dots]$.
 5. **Metallic Plate**: 2D Chladni plate resonance with dense high-frequency dispersion.
-6. **Clamped Reed**: Electrostatic reed (Wurlitzer) with prominent odd harmonics (, 3, 5, 7$).
+6. **Clamped Reed**: Electrostatic reed (Wurlitzer) with prominent odd harmonics ($1, 3, 5, 7$).
 7. **Steelpan Shell**: Tuned concave steelpan surface with octave and fifth overtone coupling.
 
 ### Parameters
 
-- **Decay Time**: Master acoustic decay duration (.02\text{ s}$ to .0\text{ s}$).
+- **Decay Time**: Master acoustic decay duration ($0.02\text{ s}$ to $8.0\text{ s}$).
 - **Pitch Bend / Drop**: Downward membrane tension pitch drop amount (semitones).
 - **Bend Time**: Rate of pitch drop decay.
 - **Tension / Tone (Brightness)**: Frequency-dependent damping coefficient $\gamma_m$.
-- **Muffle (Inharmonicity)**: Controls the stiffness dispersion factor $.
-- **Beating Bloom**: Amplitude of detuned orthogonal twin modes (, y2$) creating natural acoustic chorusing and phase beating.
+- **Muffle (Inharmonicity)**: Controls the stiffness dispersion factor $B$.
+- **Beating Bloom**: Amplitude of detuned orthogonal twin modes ($y_1, y_2$) creating natural acoustic chorusing and phase beating.
 - **Material Balance**: Balances metallic vs. wooden modal damping profiles.
 
 ---
@@ -160,7 +160,7 @@ The Resonator Bank consists of up to 32 coupled second-order modal oscillators:
 
 Couples the modal resonators to a resonant physical cavity or soundboard:
 - **Body Types**: Off, Acoustic Guitar, Piano Soundboard, Violin Body, Rhodes Tonebar, Drum Shell, Wurli Reed Bar, Harp Soundbox, Marimba Resonator, Steel Drum Barrel.
-- **Body Size**: Scales the formant resonant frequencies (.5\times$ to .5\times$).
+- **Body Size**: Scales the formant resonant frequencies ($0.5\times$ to $2.5\times$).
 - **Body Resonance**: Q-factor / sharpness of body cavity modes.
 - **Body Mix**: Wet/dry balance of acoustic body resonance.
 
@@ -169,7 +169,7 @@ Couples the modal resonators to a resonant physical cavity or soundboard:
 Converts mechanical vibration into an electrical audio signal:
 - **Pickup Types**:
   - Electromagnetic: Magnetic coil measuring string velocity $\dot{x}$.
-  - Piezo: Contact transducer measuring pressure/displacement $.
+  - Piezo: Contact transducer measuring pressure/displacement $x$.
   - Microphone: Measures pressure in acoustic air space.
   - Electrostatic: Measures variable capacitance gap (Wurlitzer reed bark).
   - Clavinet Dual-Coil: Hum-canceling dual magnetic coils with sharp inductive resonance.
@@ -203,7 +203,7 @@ Converts mechanical vibration into an electrical audio signal:
   - Phaser: 4-stage allpass filter cascade with resonant feedback notch sweep.
   - Wow & Flutter: Dual-rate analog motor drift with tape scrape flutter.
   - Tape Delay: Warm analog tape echo with filtered feedback.
-- **Rate**: Modulation frequency (.05\text{ Hz}$ to .0\text{ Hz}$).
+- **Rate**: Modulation frequency ($0.05\text{ Hz}$ to $8.0\text{ Hz}$).
 - **Depth**: Modulation depth / delay feedback.
 - **Mod Mix**: Wet/dry effect balance.
 
@@ -235,7 +235,7 @@ Converts mechanical vibration into an electrical audio signal:
 
 - **MIDI CC 64 (Sustain Pedal)**:
   - Lifting the sustain pedal drops dampers onto all active notes.
-  - Holding the sustain pedal down lifts dampers across all 88 strings, boosting **Sympathetic Bridge Coupling by .2\times$** for a singing soundboard resonance.
+  - Holding the sustain pedal down lifts dampers across all 88 strings, boosting **Sympathetic Bridge Coupling by $3.2\times$** for a singing soundboard resonance.
 - **MIDI CC 1 (Mod Wheel)**:
   - Dynamically injects organic acoustic vibrato and micro-drift across all active modal resonators.
 - **Pitch Bend**:

@@ -2,11 +2,11 @@
 
 **Physical Modeling Synthesizer** | Created by **mtyas**
 
-![C++20](https://img.shields.io/badge/C%2B%2B-20-blue.svg)
+![C++20](https://img.shields.io/badge/C++-20-blue.svg)
 ![JUCE](https://img.shields.io/badge/JUCE-8.0-orange.svg)
-![Format](https://img.shields.io/badge/Formats-VST3%20%7C%20CLAP%20%7C%20Standalone-green.svg)
-![License](https://img.shields.io/badge/License-GPL--3.0-lightgrey.svg)
-![Presets](https://img.shields.io/badge/Presets-202%20Factory-purple.svg)
+![Format](https://img.shields.io/badge/Formats-VST3_%7C_CLAP_%7C_Standalone-green.svg)
+![License](https://img.shields.io/badge/License-GPL_3.0-lightgrey.svg)
+![Presets](https://img.shields.io/badge/Presets-202_Factory-purple.svg)
 
 ---
 
@@ -73,22 +73,23 @@ For an in-depth parameter guide, physical modeling theory, and workflow tips ill
 
 ---
 
-## Installation
+## Installation & Releases
 
-### Pre-Built Binaries (Windows)
+### Pre-Built Binaries
 
-Copy the compiled plugin binaries to your standard system plugin folders:
+Pre-compiled binary packages for **Windows**, **macOS** (Universal arm64 / x86_64), and **Linux** are available on the [Releases Page](https://github.com/mtyas/TopModel/releases).
 
-| Format | Destination Path |
-| :--- | :--- |
-| **CLAP** | %LOCALAPPDATA%\Programs\Common\CLAP\TopModel.clap |
-| **VST3** | %LOCALAPPDATA%\Programs\Common\VST3\TopModel.vst3 |
+| Format | Windows Destination | macOS Destination | Linux Destination |
+| :--- | :--- | :--- | :--- |
+| **CLAP** | `%LOCALAPPDATA%\Programs\Common\CLAP\TopModel.clap` | `~/Library/Audio/Plug-Ins/CLAP/TopModel.clap` | `~/.clap/TopModel.clap` |
+| **VST3** | `%LOCALAPPDATA%\Programs\Common\VST3\TopModel.vst3` | `~/Library/Audio/Plug-Ins/VST3/TopModel.vst3` | `~/.vst3/TopModel.vst3` |
+| **Standalone** | Any directory | `/Applications/TopModel.app` | `/usr/local/bin/TopModel` |
 
 ### Building from Source
 
 TopModel uses standard **CMake** (v3.22+) and **JUCE 8**.
 
-`ash
+```bash
 # Clone repository
 git clone https://github.com/mtyas/TopModel.git
 cd TopModel
@@ -98,20 +99,24 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release
 
 # Build all targets (VST3, CLAP, Standalone, Tests)
 cmake --build build --config Release
-`
+```
 
 The compiled binaries will be located in:
-- uild/ModelKeys_artefacts/Release/CLAP/TopModel.clap
-- uild/ModelKeys_artefacts/Release/VST3/TopModel.vst3
-- uild/ModelKeys_artefacts/Release/Standalone/TopModel.exe
+- `build/ModelKeys_artefacts/Release/CLAP/TopModel.clap`
+- `build/ModelKeys_artefacts/Release/VST3/TopModel.vst3`
+- `build/ModelKeys_artefacts/Release/Standalone/TopModel.exe` (or `TopModel.app` on macOS, `TopModel` on Linux)
 
 ### Running the Test Suite
 
 TopModel includes a comprehensive 221-point automated calibration and DSP sanity test suite:
 
-`ash
+```bash
+# Windows
 ./build/Release/ModelKeys_Tests.exe
-`
+
+# macOS / Linux
+./build/ModelKeys_Tests
+```
 
 ---
 

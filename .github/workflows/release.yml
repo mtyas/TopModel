@@ -1,0 +1,187 @@
+name: Release TopModel
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (e.g. v1.0.0)'
+        required: false
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+            artifact-name: TopModel-Windows
+            archive-name: TopModel-Windows.zip
+          - os: macos-latest
+            platform: macos
+            artifact-name: TopModel-macOS
+            archive-name: TopModel-macOS.zip
+          - os: ubuntu-latest
+            platform: linux
+            artifact-name: TopModel-Linux
+            archive-name: TopModel-Linux.tar.gz
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Linux Dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y             xvfb             libasound2-dev             libjack-jackd2-dev             lv2-dev             libgl1-mesa-dev             libx11-dev             libxinerama-dev             libxext-dev             libxcursor-dev             libfreetype6-dev             libxrandr-dev
+
+      - name: Configure CMake (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          cmake -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure CMake (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+
+      - name: Configure CMake (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build All Targets
+        run: |
+          cmake --build build --config Release --parallel
+
+      - name: Run Tests (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          ./build/Release/ModelKeys_Tests.exe
+
+      - name: Run Tests (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          ./build/ModelKeys_Tests
+
+      - name: Run Tests (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          xvfb-run -a ./build/ModelKeys_Tests
+
+      - name: Package Binaries (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path staging/TopModel -Force
+          Copy-Item -Path build/ModelKeys_artefacts/Release/VST3/TopModel.vst3 -Destination staging/TopModel/ -Recurse
+          Copy-Item -Path build/ModelKeys_artefacts/Release/CLAP/TopModel.clap -Destination staging/TopModel/
+          Copy-Item -Path build/ModelKeys_artefacts/Release/Standalone/TopModel.exe -Destination staging/TopModel/
+          Copy-Item -Path README.md, LICENSE -Destination staging/TopModel/
+          New-Item -ItemType Directory -Path staging/TopModel/docs -Force
+          Copy-Item -Path docs/MANUAL.md -Destination staging/TopModel/docs/
+          Copy-Item -Path docs/images -Destination staging/TopModel/docs/ -Recurse
+          Compress-Archive -Path staging/TopModel -DestinationPath TopModel-Windows.zip
+
+      - name: Package Binaries (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          mkdir -p staging/TopModel/docs
+          find build/ModelKeys_artefacts -name "TopModel.vst3" -exec cp -R {} staging/TopModel/ \;
+          find build/ModelKeys_artefacts -name "TopModel.clap" -exec cp -R {} staging/TopModel/ \;
+          find build/ModelKeys_artefacts -name "TopModel.app" -exec cp -R {} staging/TopModel/ \;
+          cp README.md LICENSE staging/TopModel/
+          cp docs/MANUAL.md staging/TopModel/docs/
+          cp -R docs/images staging/TopModel/docs/
+          cd staging
+          zip -r -y ../TopModel-macOS.zip TopModel
+          cd ..
+
+      - name: Package Binaries (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p staging/TopModel/docs
+          find build/ModelKeys_artefacts -type d -name "TopModel.vst3" -exec cp -R {} staging/TopModel/ \;
+          find build/ModelKeys_artefacts -type f -name "TopModel.clap" -exec cp {} staging/TopModel/ \;
+          find build/ModelKeys_artefacts -type f -name "TopModel" -exec cp {} staging/TopModel/ \;
+          chmod +x staging/TopModel/TopModel
+          cp README.md LICENSE staging/TopModel/
+          cp docs/MANUAL.md staging/TopModel/docs/
+          cp -R docs/images staging/TopModel/docs/
+          tar -czvf TopModel-Linux.tar.gz -C staging TopModel
+
+      - name: Upload Package Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: ${{ matrix.archive-name }}
+          if-no-files-found: error
+
+  release:
+    name: Publish Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release_assets
+          merge-multiple: true
+
+      - name: List Downloaded Release Assets
+        run: ls -lh release_assets/
+
+      - name: Determine Release Tag
+        id: tag_info
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.release_tag }}"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag_info.outputs.tag }}
+          name: "TopModel ${{ steps.tag_info.outputs.tag }} - Physical Modeling Synthesizer"
+          draft: false
+          prerelease: false
+          files: |
+            release_assets/TopModel-Windows.zip
+            release_assets/TopModel-macOS.zip
+            release_assets/TopModel-Linux.tar.gz
+          body: |
+            # TopModel ${{ steps.tag_info.outputs.tag }}
+
+            **Physical Modeling Synthesizer** (VST3, CLAP, Standalone) created by **Matthew Tyas (mtyas)**.
+
+            ### Downloads & Packages
+            - 🪟 **Windows (x64)**: [`TopModel-Windows.zip`](https://github.com/mtyas/TopModel/releases/download/${{ steps.tag_info.outputs.tag }}/TopModel-Windows.zip)
+            - 🍏 **macOS (Universal arm64 + x86_64)**: [`TopModel-macOS.zip`](https://github.com/mtyas/TopModel/releases/download/${{ steps.tag_info.outputs.tag }}/TopModel-macOS.zip)
+            - 🐧 **Linux (x64)**: [`TopModel-Linux.tar.gz`](https://github.com/mtyas/TopModel/releases/download/${{ steps.tag_info.outputs.tag }}/TopModel-Linux.tar.gz)
+
+            ### Highlights
+            - **100% Real-Time Mathematical Simulation**: No samples, zero static wavetables.
+            - **4 Physical Exciters**: Strike (Hunt-Crossley collision & felt compaction), Pluck, Continuous Bow (Martelé hair bite & Raman friction), Granular Noise.
+            - **7 Resonator Geometries**: String, Clamped Tine (Rhodes), Free Bar (Marimba/Vibraphone), Circular Membrane, Metallic Plate, Clamped Reed (Wurlitzer), Steelpan Shell.
+            - **Sympathetic Bridge Coupling**: Multi-note sympathetic excitation through acoustic soundboard; dampers lift on Sustain Pedal (CC 64).
+            - **10 Acoustic Body Resonances & 5 Pickup Transducers**: Real electromagnetic coils, piezos, and electrostatic sensors.
+            - **Multi-FX Suite**: Analog Preamp (Tube ADAA & Tape), 7 Modulations (Chorus, Tremolo, Flanger, Ensemble, Phaser, Wow & Flutter, Tape Delay), 4 Reverbs (Plate, Room, Hall, Spring).
+            - **202 Handcrafted Presets**: Across Bass, Lead, Keys, Plucks, Pads, and Percussion.
+            - **Interactive Visualizer**: Dynamic standing wave modal phasor monitoring with draggable exciter and pickup sensors.

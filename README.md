@@ -120,6 +120,14 @@ TopModel includes a comprehensive 221-point automated calibration and DSP sanity
 
 ---
 
+## Support & Donations
+
+To support my work and encourage me to do more, please consider leaving a tip at [https://ko-fi.com/mtyas](https://ko-fi.com/mtyas).
+
+[![Support on Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20My%20Work-ff5e5b?logo=ko-fi&logoColor=white)](https://ko-fi.com/mtyas)
+
+---
+
 ## License
 
 This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**. See the [LICENSE](LICENSE) file for details.
